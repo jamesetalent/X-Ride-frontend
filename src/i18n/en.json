@@ -29,7 +29,11 @@
     "selectCountry": "Select country",
     "selectPickup": "Select pickup point",
     "selectDestination": "Select destination point",
-    "processing": "Processing..."
+    "processing": "Processing...",
+    "notProvided": "Not provided",
+    "savePreferences": "Save Preferences",
+    "editInfo": "Edit Info"
+    
   },
   "nav": {
     "home": "Home",
@@ -145,7 +149,24 @@
     "driver": "Driver",
     "vehicleInfo": "Vehicle Info",
     "pickupDetails": "Pickup Details",
-    "destinationDetails": "Destination Details"
+    "destinationDetails": "Destination Details",
+    "preferences": "Preferences",
+    "profile": "Passenger Profile",
+    "totalRides": "Total Rides",
+    "totalSpent": "Total Spent",
+    "personalInfo": "Personal Information",
+    "language": "Language",
+    "notifications": "Notifications",
+    "emailNotifications": "Email Notifications",
+    "smsNotifications": "SMS Notifications",
+    "promotionalEmails": "Promotional Emails",
+    "accountActions": "Account Actions",
+    "rideHistory": "Ride History",
+    "changePassword": "Change Password",
+    "dangerZone": "Danger Zone",
+    "deleteAccount": "Delete Account"
+   
+    
   },
   "driver": {
     "becomeDriver": "Become a Driver",

@@ -5,145 +5,114 @@
     </div>
 
     <div class="profile-content">
-      <div class="profile-card">
-        <form @submit.prevent="saveProfile" class="profile-form">
-          <div class="form-header">
+      <!-- section d'en-tête du profil avec avatar -->
+      <div class="profile-card main-card">
+        <div class="profile-header">
             <div class="avatar-section">
-              <div class="avatar-wrapper">
-                <div v-if="profilePicture" class="profile-avatar">
-                  <img :src="profilePicture" alt="Profile Picture" />
-                </div>
+                  <div class="avatar-wrapper">
+                  <div v-if="profilePicture" class="profile-avatar">
+                <img :src="profilePicture" alt="Profile Picture" />
+                  </div>
                 <div v-else class="profile-avatar initials">
                   {{ userInitials }}
                 </div>
-                <div class="avatar-overlay">
+                    <div class="avatar-overlay">
                   <label for="avatar-upload" class="upload-btn">
-                    <i class="fas fa-camera" />
+                  <i class="fas fa-camera"></i>
                   </label>
                   <input
-                    id="avatar-upload"
+                       id="avatar-upload"
                     type="file"
                     accept="image/*"
                     @change="handleImageUpload"
                     class="file-input"
                   />
                 </div>
-              </div>
-              <p class="avatar-hint">{{ $t('passenger.uploadPhoto') }}</p>
+          </div>
             </div>
-            <div class="user-info">
-              <h2>{{ formData.name || authStore.userName }}</h2>
-              <p v-if="authStore.user?.createdAt">
-                {{ $t('passenger.memberSince') }}: {{ formatDate(authStore.user.createdAt) }}
-              </p>
+          <div class="user-main-info">
+            <h2>{{ userData.name || authStore.userName }}</h2>
+           
+            <div class="user-stats">
+              <div class="stat-item">
+                <i class="fas fa-car"></i>
+                <div class="stat-details">
+                  <span class="stat-value">{{  0 }}</span>
+                  <span class="stat-label">{{ $t('passenger.totalRides') }}</span>
+            </div>
+          </div>
+              <div class="stat-item">
+                <i class="fas fa-wallet"></i>
+                <div class="stat-details">
+                  <span class="stat-value">{{ formatCurrency( 0) }}</span>
+                  <span class="stat-label">{{ $t('passenger.totalSpent') }}</span>
+            </div>
+            </div>
+            </div>
+          </div>
             </div>
           </div>
 
-          <div class="form-section">
-            <h3 class="section-title">{{ $t('passenger.personalInfo') }}</h3>
+      <div class="two-column-layout">
+        <!-- Informations persos -->
+        <div class="profile-card">
+          <h3 class="card-title">
+            <i class="fas fa-user"></i>
+            {{ $t('passenger.personalInfo') }}
+          </h3>
+          
+          <div class="info-section">
+            <div class="info-row">
+              <div class="info-label">{{ $t('common.name') }}</div>
+              <div class="info-value">{{ userData.name || authStore.userName }}</div>
+              </div>
+            
+            <div class="info-row">
+              <div class="info-label">{{ $t('common.email') }}</div>
 
-            <div class="form-group">
-              <label for="name">{{ $t('common.name') }}</label>
-              <input
-                id="name"
-                v-model="formData.name"
-                type="text"
-                :placeholder="$t('common.name')"
-              />
-              <div v-if="errors.name" class="error-message">{{ errors.name }}</div>
+              <div class="info-value">{{ userData.email || authStore.userEmail }}</div>
             </div>
 
-            <div class="form-group">
-              <label for="email">{{ $t('common.email') }}</label>
-              <input
-                id="email"
-                v-model="formData.email"
-                type="email"
-                :placeholder="$t('common.email')"
-              />
-              <div v-if="errors.email" class="error-message">{{ errors.email }}</div>
-            </div>
+              <div class="info-row">
+                <div class="info-label">{{ $t('common.phone') }}</div>
+                <div class="info-value">{{ userData.phone || $t('common.notProvided') }}</div>
+              </div>
 
-            <div class="form-group">
-              <label for="phone">{{ $t('common.phone') }}</label>
-              <input
-                id="phone"
-                v-model="formData.phone"
-                type="tel"
-                :placeholder="$t('common.phone')"
+            <button class="edit-btn" @click="isEditModalOpen = true">
+              <i class="fas fa-pen"></i>
+              {{ $t('common.editInfo') }}
+                </button>
+
+              </div>
+        </div>
+
+        <!-- Préférences -->
+        <div class="profile-card">
+          <h3 class="card-title">
+            <i class="fas fa-cog"></i>
+            {{ $t('passenger.preferences') }}
+          </h3>
+          
+          <div class="preference-section">
+            <label>{{ $t('passenger.language') }}</label>
+            <div class="language-selector">
+              <LanguageSelector
+                :languages="languages.map(lang => ({ code: lang.code, name: lang.name }))"
+                :selected-code="userData.language"
+                @update:selected-code="userData.language = $event"
               />
-              <div v-if="errors.phone" class="error-message">{{ errors.phone }}</div>
             </div>
           </div>
 
-          <div class="form-section">
-            <h3 class="section-title">{{ $t('passenger.preferences') }}</h3>
-
-            <div class="preference-group">
-              <label>{{ $t('passenger.language') }}</label>
-              <div class="preference-options">
-                <button
-                  v-for="lang in languages"
-                  :key="lang.code"
-                  type="button"
-                  class="preference-btn"
-                  :class="{ 'active': formData.language === lang.code }"
-                  @click="formData.language = lang.code"
-                >
-                  {{ lang.name }}
-                </button>
-              </div>
-            </div>
-
-            <div class="preference-group">
-              <label>{{ $t('passenger.currency') }}</label>
-              <div class="preference-options">
-                <button
-                  v-for="curr in currencies"
-                  :key="curr.code"
-                  type="button"
-                  class="preference-btn"
-                  :class="{ 'active': formData.currency === curr.code }"
-                  @click="formData.currency = curr.code"
-                >
-                  {{ curr.symbol }} {{ curr.code }}
-                </button>
-              </div>
-            </div>
-
-            <div class="preference-group">
-              <label>{{ $t('passenger.distanceUnit') }}</label>
-              <div class="preference-options">
-                <button
-                  type="button"
-                  class="preference-btn"
-                  :class="{ 'active': formData.unit === 'km' }"
-                  @click="formData.unit = 'km'"
-                >
-                  {{ $t('passenger.kilometers') }}
-                </button>
-                <button
-                  type="button"
-                  class="preference-btn"
-                  :class="{ 'active': formData.unit === 'mi' }"
-                  @click="formData.unit = 'mi'"
-                >
-                  {{ $t('passenger.miles') }}
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div class="form-section notifications-section">
-            <h3 class="section-title">{{ $t('passenger.notifications') }}</h3>
+          <div class="preference-section">
+            <label>{{ $t('passenger.notifications') }}</label>
 
             <div class="toggle-group">
               <div class="toggle-label">
                 <span>{{ $t('passenger.emailNotifications') }}</span>
-                <p class="toggle-description">{{ $t('passenger.emailNotificationsDesc') }}</p>
               </div>
               <label class="toggle-switch">
-                <input type="checkbox" v-model="formData.emailNotifications" />
+                <input type="checkbox" v-model="userData.emailNotifications" />
                 <span class="toggle-slider"></span>
               </label>
             </div>
@@ -151,10 +120,9 @@
             <div class="toggle-group">
               <div class="toggle-label">
                 <span>{{ $t('passenger.smsNotifications') }}</span>
-                <p class="toggle-description">{{ $t('passenger.smsNotificationsDesc') }}</p>
               </div>
               <label class="toggle-switch">
-                <input type="checkbox" v-model="formData.smsNotifications" />
+                <input type="checkbox" v-model="userData.smsNotifications" />
                 <span class="toggle-slider"></span>
               </label>
             </div>
@@ -162,49 +130,77 @@
             <div class="toggle-group">
               <div class="toggle-label">
                 <span>{{ $t('passenger.promotionalEmails') }}</span>
-                <p class="toggle-description">{{ $t('passenger.promotionalEmailsDesc') }}</p>
               </div>
               <label class="toggle-switch">
-                <input type="checkbox" v-model="formData.promotionalEmails" />
+                <input type="checkbox" v-model="userData.promotionalEmails" />
                 <span class="toggle-slider"></span>
               </label>
-            </div>
           </div>
 
           <div class="form-actions">
-            <button type="button" class="cancel-btn" @click="resetForm">
-              {{ $t('common.cancel') }}
-            </button>
-            <button type="submit" class="save-btn" :disabled="isSaving">
-              <span v-if="isSaving">{{ $t('common.loading') }}</span>
-              <span v-else>{{ $t('common.save') }}</span>
+              <button type="button" class="primary-btn" @click="savePreferences">
+                {{ $t('common.savePreferences') }}
             </button>
           </div>
-        </form>
+          </div>
+  </div>
       </div>
 
-      <div class="security-card">
-        <h3 class="card-title">{{ $t('passenger.security') }}</h3>
-
-        <button class="security-btn" @click="changePassword">
-          <i class="fas fa-lock" />
-          {{ $t('passenger.changePassword') }}
+      <!-- Actions  -->
+      <div class="profile-card actions-card">
+        <h3 class="card-title">
+          <i class="fas fa-shield-alt"></i>
+          {{ $t('passenger.accountActions') }}
+        </h3>
+        
+        <div class="account-actions">
+          <div class="action-buttons">
+            <button class="action-btn" @click="navigateToRides">
+              <i class="fas fa-history"></i>
+              <span>{{ $t('passenger.rideHistory') }}</span>
         </button>
 
-        <button class="security-btn" @click="manage2FA">
-          <i class="fas fa-shield-alt" />
-          {{ $t('passenger.twoFactorAuth') }}
+            <button class="action-btn" @click="changePassword">
+              <i class="fas fa-lock"></i>
+              <span>{{ $t('passenger.changePassword') }}</span>
         </button>
 
-        <div class="delete-account">
-          <h3>{{ $t('passenger.dangerZone') }}</h3>
-          <button class="delete-account-btn" @click="deleteAccount">
-            {{ $t('passenger.deleteAccount') }}
+            <button class="action-btn logout-btn" @click="logout">
+                  <i class="fas fa-sign-out-alt"></i>
+              <span>{{ $t('common.logout') }}</span>
           </button>
-          <p class="warning-text">{{ $t('passenger.deleteAccountWarning') }}</p>
         </div>
+          
+          <div class="danger-zone">
+            <h4>{{ $t('passenger.dangerZone') }}</h4>
+            <button class="danger-btn" @click="deleteAccount">
+              <i class="fas fa-trash-alt"></i>
+               <span>{{ $t('passenger.deleteAccount') }}</span>
+            </button>
+        </div>
+    </div>
       </div>
     </div>
+    
+    <!-- Modal update des infor utilisateur -->
+    <GlobalModal 
+      :is-open="isEditModalOpen"
+      :title="$t('passenger.editPersonalInfo')"
+      :is-saving="isSaving"
+      :save-disabled="!isFormValid"
+      :cancel-text="$t('common.cancel')"
+      :save-text="$t('common.save')"
+      :loading-text="$t('common.saving')"
+      @close="isEditModalOpen = false"
+      @save="handleSaveUserData"
+    >
+      <EditUserForm 
+        ref="editUserFormRef"
+        :user-data="userData"
+        @update="updateUserData"
+        @validation-change="isFormValid = $event"
+      />
+    </GlobalModal>
   </div>
 </template>
 
@@ -212,20 +208,26 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '../../stores/useAuthStore'
+import { useRouter } from 'vue-router'
+import GlobalModal from '../../components/modals/GlobalModal.vue'
+import EditUserForm from '../../components/forms/EditUserForm.vue'
+import LanguageSelector from '../../components/ui/LanguageSelector.vue'
 
 const { t, locale } = useI18n()
 const authStore = useAuthStore()
+const router = useRouter()
 
-// Profile picture
+
+const isEditModalOpen = ref(false)
+const isFormValid = ref(true)
+const editUserFormRef = ref(null)
 const profilePicture = ref<string | null>(null)
 
-// User initials computed from name
 const userInitials = computed(() => {
   return authStore.userInitials
 })
 
-// Form data
-const formData = reactive({
+const userData = reactive({
   name: '',
   email: '',
   phone: '',
@@ -244,10 +246,9 @@ const errors = reactive({
   phone: ''
 })
 
-// Saving state
 const isSaving = ref(false)
 
-// Available languages
+// langues
 const languages = [
   { code: 'en', name: 'English' },
   { code: 'es', name: 'Español' },
@@ -256,21 +257,26 @@ const languages = [
   { code: 'ru', name: 'Русский' }
 ]
 
-// Available currencies
-const currencies = [
-  { code: 'USD', symbol: '$' },
-  { code: 'EUR', symbol: '€' },
-  { code: 'GBP', symbol: '£' },
-  { code: 'RUB', symbol: '₽' }
-]
+
 
 // Format date for display
 function formatDate(dateString: string) {
   const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', {
+  return date.toLocaleDateString(locale.value, {
     month: 'long',
     year: 'numeric'
   })
+}
+
+// Format currency based on user preference
+function formatCurrency(amount: number) {
+  const currencyCode = localStorage.getItem('currency') || 'USD'
+
+  
+  return new Intl.NumberFormat(locale.value, {
+    style: 'currency',
+    currency: currencyCode
+  }).format(amount)
 }
 
 // Handle profile image upload
@@ -301,122 +307,59 @@ function handleImageUpload(event: Event) {
   }
 }
 
-// Validate form
-function validateForm() {
-  let isValid = true
-
-  // Reset errors
-  errors.name = ''
-  errors.email = ''
-  errors.phone = ''
-
-  // Validate name
-  if (!formData.name) {
-    errors.name = t('errors.required')
-    isValid = false
-  } else if (formData.name.length < 2) {
-    errors.name = t('errors.fieldTooShort')
-    isValid = false
-  }
-
-  // Validate email
-  if (!formData.email) {
-    errors.email = t('errors.required')
-    isValid = false
-  } else {
-    // Simple email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(formData.email)) {
-      errors.email = t('errors.invalidEmail')
-      isValid = false
-    }
-  }
-
-  // Validate phone (optional)
-  if (formData.phone && formData.phone.length < 6) {
-    errors.phone = t('errors.invalidPhone')
-    isValid = false
-  }
-
-  return isValid
+// mise à jour des données utilisateur
+function updateUserData(updatedData: any) {
+  
 }
 
-// Save profile
-async function saveProfile() {
-  if (!validateForm()) {
-    return
-  }
-
-  isSaving.value = true
-
-  try {
-    // In a real app, this would call an API endpoint
-    await new Promise(resolve => setTimeout(resolve, 1000))
-
-    // Update user profile in auth store
-    const success = await authStore.updateProfile({
-      name: formData.name,
-      email: formData.email,
-      phone: formData.phone,
-      avatar: profilePicture.value
-    })
-
-    if (success) {
-      // Save preferences to localStorage
-      localStorage.setItem('language', formData.language)
-      localStorage.setItem('currency', formData.currency)
-      localStorage.setItem('unit', formData.unit)
-
-      // Update i18n locale
-      locale.value = formData.language
-
-      alert(t('passenger.profileUpdated'))
-    } else {
-      alert(t('errors.somethingWentWrong'))
-    }
-  } catch (error) {
-    console.error('Error updating profile:', error)
-    alert(t('errors.somethingWentWrong'))
-  } finally {
-    isSaving.value = false
-  }
+// gestion de la sauvegarde des données utilisateur
+async function handleSaveUserData() {
+  
+  
 }
 
-// Reset form to initial values
+
+async function savePreferences() {
+  
+}
+
+
 function resetForm() {
-  formData.name = authStore.userName
-  formData.email = authStore.userEmail
-  formData.phone = authStore.user?.phone || ''
-  formData.language = locale.value
-  formData.currency = localStorage.getItem('currency') || 'USD'
-  formData.unit = localStorage.getItem('unit') || 'km'
+  userData.name = authStore.userName
+  userData.email = authStore.userEmail
+  userData.phone = authStore.user?.phone || ''
+  userData.language = locale.value
+  userData.currency = localStorage.getItem('currency') || 'USD'
+  userData.unit = localStorage.getItem('unit') || 'km'
   profilePicture.value = authStore.user?.avatar || null
 
-  // Reset errors
+ 
   errors.name = ''
   errors.email = ''
   errors.phone = ''
 }
 
-// Security actions
-function changePassword() {
-  // In a real app, this would open a modal or navigate to a password change page
-  alert(t('passenger.changePasswordPrompt'))
-}
 
-function manage2FA() {
-  // In a real app, this would open a modal or navigate to a 2FA management page
-  alert(t('passenger.manage2FAPrompt'))
+function changePassword() {
+  //modale reset password
+  alert(t('passenger.changePassword'))
 }
 
 function deleteAccount() {
-  // In a real app, this would show a confirmation dialog and then call an API
-  if (window.confirm(t('passenger.deleteAccountConfirm'))) {
-    alert(t('passenger.accountDeletionRequested'))
-  }
+ 
 }
 
-// Initialize form data from auth store
+
+function navigateToRides()   {
+  router.push('/passenger/rides')
+}
+
+
+function logout() {
+
+}
+
+
 onMounted(() => {
   resetForm()
 })
@@ -424,7 +367,10 @@ onMounted(() => {
 
 <style scoped>
 .profile-page {
-  padding: 1.5rem;
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  color: #333;
 }
 
 .page-header {
@@ -432,42 +378,84 @@ onMounted(() => {
 }
 
 .page-header h1 {
-  font-size: 1.75rem;
+  font-size: 2rem;
+  font-weight: 700;
   color: #333;
   margin: 0;
+  position: relative;
+  display: inline-block;
+}
+
+.page-header h1:after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 50px;
+  height: 4px;
+  background-color: #f86906;
+  border-radius: 2px;
 }
 
 .profile-content {
-  display: grid;
-  grid-template-columns: 1fr 300px;
+  display: flex;
+  flex-direction: column;
   gap: 1.5rem;
 }
 
-.profile-card,
-.security-card {
+.two-column-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.profile-card {
   background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
   padding: 1.5rem;
 }
 
-.form-header {
+.card-title {
+  font-size: 1.25rem;
+  color: #333;
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #eee;
   display: flex;
   align-items: center;
-  margin-bottom: 2rem;
+}
+
+.card-title i {
+  margin-right: 0.75rem;
+  color: #f86906;
+}
+
+
+.main-card {
+  padding: 1.5rem;
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
 }
 
 .avatar-section {
-  margin-right: 1.5rem;
-  text-align: center;
+  flex-shrink: 0;
 }
 
 .avatar-wrapper {
   position: relative;
-  width: 100px;
-  height: 100px;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  overflow: visible;
   margin-bottom: 0.5rem;
   cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .profile-avatar {
@@ -476,6 +464,10 @@ onMounted(() => {
   border-radius: 50%;
   overflow: hidden;
   background-color: #f5f5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid white;
 }
 
 .profile-avatar img {
@@ -490,8 +482,8 @@ onMounted(() => {
   justify-content: center;
   background-color: #f86906;
   color: white;
-  font-size: 2rem;
-  font-weight: 600;
+  font-size: 2.5rem;
+  font-weight: 700;
 }
 
 .avatar-overlay {
@@ -499,14 +491,15 @@ onMounted(() => {
   bottom: 0;
   right: 0;
   background-color: #f86906;
-  width: 30px;
-  height: 30px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
-  border: 2px solid white;
+  border: 3px solid white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 .upload-btn {
@@ -525,97 +518,123 @@ onMounted(() => {
   opacity: 0;
 }
 
-.avatar-hint {
-  font-size: 0.8rem;
-  color: #666;
-  margin: 0;
+.user-main-info {
+  flex: 1;
 }
 
-.user-info h2 {
-  font-size: 1.25rem;
+.user-main-info h2 {
+  font-size: 1.75rem;
   color: #333;
-  margin: 0 0 0.25rem;
+  margin: 0 0 0.5rem;
+  font-weight: 700;
 }
 
-.user-info p {
+.member-since {
   font-size: 0.9rem;
   color: #666;
-  margin: 0;
-}
-
-.form-section {
-  margin-bottom: 2rem;
-}
-
-.section-title {
-  font-size: 1.1rem;
-  color: #333;
-  margin-bottom: 1rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid #eee;
-}
-
-.form-group {
-  margin-bottom: 1rem;
-}
-
-.form-group label {
-  display: block;
-  font-size: 0.9rem;
-  color: #666;
-  margin-bottom: 0.4rem;
-}
-
-.form-group input {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  font-size: 1rem;
-}
-
-.form-group input:focus {
-  border-color: #f86906;
-  outline: none;
-}
-
-.error-message {
-  color: #e53935;
-  font-size: 0.8rem;
-  margin-top: 0.25rem;
-}
-
-.preference-group {
-  margin-bottom: 1rem;
-}
-
-.preference-group label {
-  display: block;
-  font-size: 0.9rem;
-  color: #666;
-  margin-bottom: 0.4rem;
-}
-
-.preference-options {
+  margin: 0 0 1rem;
   display: flex;
-  flex-wrap: wrap;
+  align-items: center;
+}
+
+.member-since i {
+  margin-right: 0.5rem;
+  color: #f86906;
+}
+
+.user-stats {
+  display: flex;
+  gap: 2rem;
+  margin-top: 1rem;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.stat-item i {
+  font-size: 1.5rem;
+  color: #f86906;
+  background-color: rgba(248, 105, 6, 0.1);
+  padding: 0.75rem;
+  border-radius: 50%;
+}
+
+.stat-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #333;
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+/* sec info */
+.info-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.info-row {
+  display: flex;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.info-label {
+  width: 30%;
+  font-weight: 500;
+  color: #666;
+}
+
+.info-value {
+  width: 70%;
+  color: #333;
+}
+
+.edit-btn {
+  align-self: flex-start;
+  margin-top: 1rem;
+  padding: 0.6rem 1.2rem;
+  background-color: #f5f5f5;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: #333;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
   gap: 0.5rem;
 }
 
-.preference-btn {
-  padding: 0.5rem 0.75rem;
-  background-color: #f5f5f5;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  color: #666;
-  cursor: pointer;
+.edit-btn i {
+  color: #f86906;
+}
+.preference-section {
+  margin-bottom: 2rem;
 }
 
-.preference-btn.active {
-  background-color: #f86906;
-  color: white;
-  border-color: #f86906;
+.preference-section > label {
+  display: block;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.preference-section .language-selector {
+  margin-bottom: 1.5rem;
+  max-width: 100%;
 }
 
 .toggle-group {
@@ -627,9 +646,10 @@ onMounted(() => {
   border-bottom: 1px solid #f5f5f5;
 }
 
-.toggle-group:last-child {
+.toggle-group:last-of-type {
   border-bottom: none;
   padding-bottom: 0;
+  margin-bottom: 1.5rem;
 }
 
 .toggle-label {
@@ -637,23 +657,17 @@ onMounted(() => {
 }
 
 .toggle-label span {
-  display: block;
   font-weight: 500;
   color: #333;
-  margin-bottom: 0.25rem;
 }
 
-.toggle-description {
-  font-size: 0.8rem;
-  color: #666;
-  margin: 0;
-}
+
 
 .toggle-switch {
   position: relative;
   display: inline-block;
-  width: 48px;
-  height: 24px;
+  width: 50px;
+  height: 26px;
 }
 
 .toggle-switch input {
@@ -669,21 +683,20 @@ onMounted(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #ccc;
-  transition: .4s;
-  border-radius: 24px;
+  background-color: #e0e0e0;
+  border-radius: 26px;
 }
 
 .toggle-slider:before {
   position: absolute;
   content: "";
-  height: 16px;
-  width: 16px;
-  left: 4px;
-  bottom: 4px;
+  height: 20px;
+  width: 20px;
+  left: 3px;
+  bottom: 3px;
   background-color: white;
-  transition: .4s;
   border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .toggle-switch input:checked + .toggle-slider {
@@ -694,129 +707,157 @@ onMounted(() => {
   transform: translateX(24px);
 }
 
-.form-actions {
+.account-actions {
   display: flex;
-  justify-content: flex-end;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.action-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 1rem;
-  margin-top: 2rem;
 }
 
-.cancel-btn,
-.save-btn {
-  padding: 0.75rem 1.5rem;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-}
-
-.cancel-btn {
-  background-color: #f5f5f5;
-  border: 1px solid #e0e0e0;
-  color: #666;
-}
-
-.save-btn {
-  background-color: #f86906;
-  border: none;
-  color: white;
-}
-
-.save-btn:disabled {
-  background-color: #ffccaa;
-  cursor: not-allowed;
-}
-
-.security-card .card-title {
-  font-size: 1.1rem;
-  color: #333;
-  margin-bottom: 1rem;
-}
-
-.security-btn {
+.action-btn {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  width: 100%;
-  padding: 0.75rem;
-  background-color: #f5f5f5;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  font-size: 0.9rem;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1.5rem;
+  background-color: #f9f9f9;
+  border: 1px solid #eee;
+  border-radius: 8px;
   color: #333;
-  margin-bottom: 1rem;
   cursor: pointer;
-  text-align: left;
 }
 
-.security-btn i {
-  margin-right: 0.5rem;
-  width: 20px;
-  text-align: center;
+.action-btn i {
+  font-size: 1.5rem;
+  color: #f86906;
 }
 
-.delete-account {
-  margin-top: 2rem;
-  padding-top: 1.5rem;
+.action-btn span {
+  font-weight: 500;
+}
+
+.logout-btn {
+  border-color: #ffccaa;
+  background-color: #fff8f5;
+}
+
+.logout-btn i {
+  color: #f86906;
+}
+
+.danger-zone {
   border-top: 1px solid #f5f5f5;
+  padding-top: 1.5rem;
 }
 
-.delete-account h3 {
-  font-size: 1rem;
+.danger-zone h4 {
   color: #e53935;
   margin-bottom: 1rem;
+  font-size: 1rem;
+  font-weight: 600;
 }
 
-.delete-account-btn {
+.danger-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
   width: 100%;
   padding: 0.75rem;
   background-color: #ffebee;
   border: 1px solid #ffcdd2;
-  border-radius: 4px;
+  border-radius: 8px;
   color: #e53935;
-  font-size: 0.9rem;
   cursor: pointer;
-  margin-bottom: 0.5rem;
 }
 
-.warning-text {
-  font-size: 0.8rem;
-  color: #666;
-  margin: 0;
+.form-actions {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: flex-end;
 }
 
+.primary-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background-color: #f86906;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.primary-btn:disabled {
+  background-color: #ffccaa;
+  cursor: not-allowed;
+}
 @media (max-width: 992px) {
-  .profile-content {
+  .two-column-layout {
     grid-template-columns: 1fr;
   }
+  
+  .profile-page {
+    padding: 1.5rem;
+  }
+}
 
-  .security-card {
-    order: -1;
-    margin-bottom: 1.5rem;
+@media (max-width: 768px) {
+  .profile-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+  
+  .avatar-wrapper {
+    margin: 0 auto;
+  }
+  
+  .user-stats {
+    justify-content: center;
+  }
+  
+  .action-buttons {
+    grid-template-columns: 1fr 1fr;
   }
 }
 
 @media (max-width: 576px) {
-  .form-header {
-    flex-direction: column;
-    text-align: center;
+  .profile-page {
+    padding: 1rem;
   }
-
-  .avatar-section {
-    margin-right: 0;
-    margin-bottom: 1rem;
+  
+  .action-buttons {
+    grid-template-columns: 1fr;
   }
-
-  .avatar-wrapper {
-    margin: 0 auto 0.5rem;
-  }
-
+  
   .form-actions {
+    justify-content: center;
+  }
+  
+  .primary-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .info-row {
     flex-direction: column;
   }
-
-  .cancel-btn,
-  .save-btn {
+  
+  .info-label, .info-value {
     width: 100%;
+  }
+  
+  .info-value {
+    margin-top: 0.25rem;
   }
 }
 </style>
