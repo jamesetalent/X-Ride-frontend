@@ -2,14 +2,31 @@
   "semi": true,
   "tabWidth": 2,
   "printWidth": 100,
-  "trailingComma": "all",
-  "singleQuote": false,
+  "trailingComma": "es5",
+  "singleQuote": true,
   "jsxSingleQuote": false,
   "bracketSpacing": true,
   "bracketSameLine": false,
-  "arrowParens": "always",
+  "arrowParens": "avoid", 
   "endOfLine": "lf",
   "quoteProps": "as-needed",
+  "useTabs": false,
+  "vueIndentScriptAndStyle": true,
+  "htmlWhitespaceSensitivity": "css",
   "plugins": ["prettier-plugin-tailwindcss"],
-  "embeddedLanguageFormatting": "auto"
+  "overrides": [
+    {
+      "files": "*.vue","options": {
+        "parser":  "vue"
+      }
+    },
+
+    {
+      "files": "*.ts",
+      "options": {
+        "parser": "typescript"    
+      }
+    }
+  
+  ]
 }
