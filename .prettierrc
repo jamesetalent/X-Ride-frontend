@@ -10,7 +10,7 @@
   "arrowParens": "avoid", 
   "endOfLine": "lf",
   "quoteProps": "as-needed",
-  "useTabs": false,
+  "useTabs": true,
   "vueIndentScriptAndStyle": true,
   "htmlWhitespaceSensitivity": "css",
   "plugins": ["prettier-plugin-tailwindcss"],
